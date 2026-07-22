@@ -1,102 +1,89 @@
 Motatel by Max DetaL v1.3
 =========================
 
-Continuous media seeking for macOS.
+Hold media keys to seek. Tap to skip.
 
-Originally built for MIDI DOBRYNYA controllers by Max DetaL.
+SUPPORTED SYSTEMS
+-----------------
 
-------------------------------------------------------------
-WHAT IT DOES
-------------------------------------------------------------
+Apple Silicon Macs only.
+M1 or newer.
+macOS 13 Ventura or later.
 
-Previous / Next
+Intel Macs and macOS 12 or earlier are not officially supported.
 
-• Tap
-  Previous / Next track
-
-• Hold
-  Continuous seeking
-
-• Hold + Play/Pause
-  Jump ±60 seconds in the current seek direction
-
-Seek speed increases automatically while holding the button.
-
-------------------------------------------------------------
-REQUIREMENTS
-------------------------------------------------------------
-
-Before installing Motatel, make sure you have:
-
-✓ Homebrew
-
-✓ Python 3
-
-✓ Karabiner-Elements
-
-Launch Karabiner-Elements at least once and approve all
-requested macOS permissions.
-
-------------------------------------------------------------
 INSTALLATION
-------------------------------------------------------------
+------------
 
-If Homebrew is not installed:
+Open Terminal and run:
 
-/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/maxdetal/Motatel/main/install.sh)"
 
-Install Python:
+The installer checks and installs the required components:
 
-brew install python
+- Homebrew
+- Python 3
+- Karabiner-Elements
+- Motatel
 
-Install Karabiner-Elements:
+When Karabiner-Elements opens, follow its setup instructions
+and approve the permissions requested by macOS.
 
-brew install --cask karabiner-elements
+Return to Terminal and press Enter when prompted.
 
-Launch Karabiner once:
+WHAT IT DOES
+------------
 
-open -a "Karabiner-Elements"
+Previous / Next:
 
-Approve the requested macOS permissions.
+Tap:
+Previous or next track.
 
-Then install Motatel:
+Hold:
+Continuous seeking backward or forward.
 
-bash install.sh
+Play/Pause:
 
-------------------------------------------------------------
-WHAT THE INSTALLER DOES
-------------------------------------------------------------
+Normal press:
+Regular Play/Pause.
 
-• installs Motatel
+Press while seeking:
+Jump 60 seconds in the active direction.
 
-• installs the background daemon
+SEEKING PROFILE
+---------------
 
-• installs helper scripts
+Up to 1 second:
+20-second seek steps.
 
-• installs the LaunchAgent
+From 1 to 2.5 seconds:
+35-second seek steps.
 
-• patches your Karabiner configuration
+After 2.5 seconds:
+60-second seek steps.
 
-• creates a backup before modifying anything
+COMPATIBLE DEVICES
+------------------
 
-• starts automatically after login
+- MacBook built-in keyboard
+- Apple keyboards
+- MIDI DOBRYNYA controllers
+- Compatible BLE media controllers
+- Compatible HID keyboards and remotes
 
-------------------------------------------------------------
 UNINSTALL
-------------------------------------------------------------
+---------
 
-bash uninstall.sh
+Open Terminal and run:
 
-------------------------------------------------------------
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/maxdetal/Motatel/main/uninstall.sh)"
+
 AUTHOR
-------------------------------------------------------------
+------
 
 Max DetaL
 
-https://github.com/maxdetal
-
-------------------------------------------------------------
 VERSION
-------------------------------------------------------------
+-------
 
 1.3
