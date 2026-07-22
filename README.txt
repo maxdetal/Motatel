@@ -19,22 +19,26 @@ Open Terminal and run:
 
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/maxdetal/Motatel/main/install.sh)"
 
-The installer checks and installs the required components:
+The installer automatically:
 
-- Homebrew
-- Python 3
-- Karabiner-Elements
-- Motatel
+- checks system compatibility
+- installs Homebrew (if needed)
+- installs Python 3 (if needed)
+- installs media-control (if needed)
+- installs Karabiner-Elements (if needed)
+- installs Motatel
+- configures Karabiner
+- installs and starts the background service
 
 When Karabiner-Elements opens, follow its setup instructions
-and approve the permissions requested by macOS.
+and approve all permissions requested by macOS.
 
 Return to Terminal and press Enter when prompted.
 
 WHAT IT DOES
 ------------
 
-Previous / Next:
+Previous / Next
 
 Tap:
 Previous or next track.
@@ -42,7 +46,7 @@ Previous or next track.
 Hold:
 Continuous seeking backward or forward.
 
-Play/Pause:
+Play/Pause
 
 Normal press:
 Regular Play/Pause.
