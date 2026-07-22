@@ -1,47 +1,137 @@
 #!/bin/bash
 set -euo pipefail
 
-APP_TITLE="Мотатель by Max DetaL v1.3"
-SOURCE_DIR="$(cd "$(dirname "$0")" && pwd)"
+APP_TITLE="Motatel by Max DetaL v1.3"
+REPO="maxdetal/Motatel"
+BRANCH="main"
+
+TMP_ROOT="/tmp/motatel-installer"
+ARCHIVE="$TMP_ROOT/Motatel.tar.gz"
+SOURCE_DIR="$TMP_ROOT/Motatel-$BRANCH"
 PAYLOAD="$SOURCE_DIR/payload"
+
 TARGET_HOME="$HOME"
 DOMAIN="gui/$(id -u)"
 SERVICE="com.yarw.media-seek-daemon"
 PLIST="$TARGET_HOME/Library/LaunchAgents/$SERVICE.plist"
 KARABINER_CONFIG="$TARGET_HOME/.config/karabiner/karabiner.json"
 
+say() {
+    printf "\n%s\n" "$1"
+}
+
+fail() {
+    printf "\nERROR: %s\n\n" "$1" >&2
+    exit 1
+}
+
+load_brew() {
+    if command -v brew >/dev/null 2>&1; then
+        return 0
+    fi
+
+    if [ -x /opt/homebrew/bin/brew ]; then
+        eval "$(/opt/homebrew/bin/brew shellenv)"
+    elif [ -x /usr/local/bin/brew ]; then
+        eval "$(/usr/local/bin/brew shellenv)"
+    fi
+}
+
 echo
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo "  $APP_TITLE"
-echo "  Установка"
+echo "  Automatic installer"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo
+
+say "Checking Homebrew..."
+
+load_brew
+
+if ! command -v brew >/dev/null 2>&1; then
+    echo "Homebrew was not found."
+    echo "Installing Homebrew..."
+
+    /bin/bash -c \
+        "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+
+    load_brew
+fi
+
+command -v brew >/dev/null 2>&1 \
+    || fail "Homebrew installation could not be completed."
+
+echo "✓ Homebrew: $(brew --version | head -n 1)"
+
+say "Checking Python 3..."
 
 if ! command -v python3 >/dev/null 2>&1; then
-    echo "ОШИБКА: команда python3 не найдена."
-    echo
-    echo "Установи Python 3 и повторно запусти:"
-    echo "bash install.sh"
-    exit 1
+    echo "Python 3 was not found."
+    echo "Installing Python 3..."
+
+    brew install python
 fi
+
+command -v python3 >/dev/null 2>&1 \
+    || fail "Python 3 installation could not be completed."
+
+echo "✓ Python: $(python3 --version)"
+
+say "Checking Karabiner-Elements..."
 
 if [ ! -d "/Applications/Karabiner-Elements.app" ]; then
-    echo "ОШИБКА: Karabiner-Elements не установлен."
-    echo
-    echo "Установи Karabiner-Elements, запусти его один раз,"
-    echo "выдай разрешения macOS и повторно запусти:"
-    echo "bash install.sh"
-    exit 1
+    echo "Karabiner-Elements was not found."
+    echo "Installing Karabiner-Elements..."
+
+    brew install --cask karabiner-elements
 fi
 
+[ -d "/Applications/Karabiner-Elements.app" ] \
+    || fail "Karabiner-Elements installation could not be completed."
+
+echo "✓ Karabiner-Elements installed"
+
+say "Opening Karabiner-Elements..."
+
+open -a "Karabiner-Elements"
+
+echo
+echo "macOS may now ask for permissions."
+echo
+echo "Please enable the permissions requested by Karabiner,"
+echo "including Accessibility and Input Monitoring."
+echo
+echo "Return to Terminal when Karabiner is ready."
+echo
+
+read -r -p "Press Enter to continue..."
+
+say "Waiting for the Karabiner configuration..."
+
+for _ in {1..30}; do
+    if [ -f "$KARABINER_CONFIG" ]; then
+        break
+    fi
+
+    sleep 1
+done
+
 if [ ! -f "$KARABINER_CONFIG" ]; then
-    echo "ОШИБКА: Karabiner ещё не создал свой конфиг."
-    echo
-    echo "Открой Karabiner-Elements хотя бы один раз,"
-    echo "затем повторно запусти:"
-    echo "bash install.sh"
-    exit 1
+    fail "Karabiner did not create its configuration file. Open Karabiner once, then run the installer again."
 fi
+
+say "Downloading Motatel..."
+
+rm -rf "$TMP_ROOT"
+mkdir -p "$TMP_ROOT"
+
+curl -fL \
+    "https://github.com/$REPO/archive/refs/heads/$BRANCH.tar.gz" \
+    -o "$ARCHIVE"
+
+tar -xzf "$ARCHIVE" -C "$TMP_ROOT"
+
+[ -d "$PAYLOAD" ] \
+    || fail "The Motatel payload could not be found."
 
 for required in \
     media-seek-daemon.py \
@@ -50,20 +140,15 @@ for required in \
     com.yarw.media-seek-daemon.plist \
     karabiner-rules.json
 do
-    if [ ! -f "$PAYLOAD/$required" ]; then
-        echo "ОШИБКА: в пакете отсутствует:"
-        echo "$PAYLOAD/$required"
-        exit 1
-    fi
+    [ -f "$PAYLOAD/$required" ] \
+        || fail "Missing file: payload/$required"
 done
 
-echo "Создаю папки..."
+say "Installing Motatel..."
 
 mkdir -p "$TARGET_HOME/.local/bin"
 mkdir -p "$TARGET_HOME/Library/LaunchAgents"
 mkdir -p "$TARGET_HOME/.config/karabiner"
-
-echo "Устанавливаю рабочие файлы..."
 
 python3 - "$PAYLOAD" "$TARGET_HOME" <<'PY'
 from pathlib import Path
@@ -89,12 +174,7 @@ destinations = {
 
 for filename, destination in destinations.items():
     text = (payload / filename).read_text()
-
-    text = text.replace(
-        "__MOTATEL_HOME__",
-        str(home),
-    )
-
+    text = text.replace("__MOTATEL_HOME__", str(home))
     destination.write_text(text)
 
     print(f"  ✓ {destination}")
@@ -105,7 +185,7 @@ chmod +x \
     "$TARGET_HOME/.local/bin/media-seek-command" \
     "$TARGET_HOME/.local/bin/media-seek-jump"
 
-echo "Добавляю правила Karabiner..."
+say "Installing the Karabiner rules..."
 
 python3 - \
     "$PAYLOAD/karabiner-rules.json" \
@@ -142,7 +222,7 @@ profiles = config.get("profiles", [])
 
 if not profiles:
     raise SystemExit(
-        "ОШИБКА: в Karabiner не найдено ни одного профиля."
+        "ERROR: No Karabiner profile was found."
     )
 
 profile = next(
@@ -197,11 +277,11 @@ config_file.write_text(
     ) + "\n"
 )
 
-print(f"  ✓ Резервная копия: {backup}")
-print(f"  ✓ Добавлено правил: {len(new_rules)}")
+print(f"  ✓ Backup: {backup}")
+print(f"  ✓ Installed rules: {len(new_rules)}")
 PY
 
-echo "Запускаю Мотатель..."
+say "Starting Motatel..."
 
 launchctl bootout \
     "$DOMAIN/$SERVICE" \
@@ -223,33 +303,29 @@ launchctl kickstart -k \
 
 sleep 1
 
-if launchctl print "$DOMAIN/$SERVICE" \
+if ! launchctl print "$DOMAIN/$SERVICE" \
     >/dev/null 2>&1
 then
-    echo
-    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-    echo "  ГОТОВО"
-    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-    echo
-    echo "$APP_TITLE установлен и запущен."
-    echo
-    echo "Короткое нажатие:"
-    echo "  предыдущий или следующий трек"
-    echo
-    echo "Удержание:"
-    echo "  непрерывная перемотка"
-    echo
-    echo "Play/Pause во время удержания:"
-    echo "  прыжок на 60 секунд"
-    echo
-    echo "Ускорение перемотки:"
-    echo "  через 1.0 и 2.5 секунды"
-    echo
-    echo "Теперь проверяй кнопки."
-    echo
-else
-    echo
-    echo "Установка завершена, но служба не появилась"
-    echo "в launchctl. Попробуй перезагрузить Mac."
-    exit 1
+    fail "Motatel was installed, but the background service did not start."
 fi
+
+rm -rf "$TMP_ROOT"
+
+echo
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "  INSTALLATION COMPLETE"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo
+echo "$APP_TITLE is installed and running."
+echo
+echo "Tap Previous / Next:"
+echo "  previous or next track"
+echo
+echo "Hold Previous / Next:"
+echo "  continuous seeking"
+echo
+echo "Press Play/Pause while seeking:"
+echo "  jump 60 seconds"
+echo
+echo "Enjoy."
+echo
