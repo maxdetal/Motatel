@@ -13,8 +13,10 @@ PAYLOAD="$SOURCE_DIR/payload"
 TARGET_HOME="$HOME"
 DOMAIN="gui/$(id -u)"
 SERVICE="com.yarw.media-seek-daemon"
+
 PLIST="$TARGET_HOME/Library/LaunchAgents/$SERVICE.plist"
 KARABINER_CONFIG="$TARGET_HOME/.config/karabiner/karabiner.json"
+KARABINER_APP="/Applications/Karabiner-Elements.app"
 
 say() {
     printf "\n%s\n" "$1"
@@ -37,11 +39,34 @@ load_brew() {
     fi
 }
 
+cleanup() {
+    rm -rf "$TMP_ROOT"
+}
+
+trap cleanup EXIT
+
 echo
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo "  $APP_TITLE"
 echo "  Automatic installer"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+
+say "Checking system compatibility..."
+
+ARCH="$(uname -m)"
+MACOS_VERSION="$(sw_vers -productVersion)"
+MACOS_MAJOR="${MACOS_VERSION%%.*}"
+
+if [ "$ARCH" != "arm64" ]; then
+    fail "Motatel v1.3 currently supports Apple Silicon Macs only (M1 or newer)."
+fi
+
+if [ "$MACOS_MAJOR" -lt 13 ]; then
+    fail "Motatel v1.3 requires macOS 13 Ventura or later."
+fi
+
+echo "✓ Architecture: $ARCH"
+echo "✓ macOS: $MACOS_VERSION"
 
 say "Checking Homebrew..."
 
@@ -50,6 +75,7 @@ load_brew
 if ! command -v brew >/dev/null 2>&1; then
     echo "Homebrew was not found."
     echo "Installing Homebrew..."
+    echo
 
     /bin/bash -c \
         "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
@@ -57,8 +83,9 @@ if ! command -v brew >/dev/null 2>&1; then
     load_brew
 fi
 
-command -v brew >/dev/null 2>&1 \
-    || fail "Homebrew installation could not be completed."
+if ! command -v brew >/dev/null 2>&1; then
+    fail "Homebrew installation could not be completed."
+fi
 
 echo "✓ Homebrew: $(brew --version | head -n 1)"
 
@@ -67,38 +94,81 @@ say "Checking Python 3..."
 if ! command -v python3 >/dev/null 2>&1; then
     echo "Python 3 was not found."
     echo "Installing Python 3..."
+    echo
 
     brew install python
 fi
 
-command -v python3 >/dev/null 2>&1 \
-    || fail "Python 3 installation could not be completed."
+if ! command -v python3 >/dev/null 2>&1; then
+    fail "Python 3 installation could not be completed."
+fi
 
-echo "✓ Python: $(python3 --version)"
+PYTHON_BIN="$(command -v python3)"
+
+if [ ! -x "$PYTHON_BIN" ]; then
+    fail "Python 3 was found, but it is not executable."
+fi
+
+echo "✓ Python: $("$PYTHON_BIN" --version)"
+echo "✓ Python path: $PYTHON_BIN"
+
+say "Checking media-control..."
+
+if ! command -v media-control >/dev/null 2>&1; then
+    echo "media-control was not found."
+    echo "Installing media-control..."
+    echo
+
+    brew install media-control
+fi
+
+if ! command -v media-control >/dev/null 2>&1; then
+    fail "media-control installation could not be completed."
+fi
+
+MEDIA_CONTROL_BIN="$(command -v media-control)"
+
+if [ ! -x "$MEDIA_CONTROL_BIN" ]; then
+    fail "media-control was found, but it is not executable."
+fi
+
+echo "✓ media-control installed"
+echo "✓ media-control path: $MEDIA_CONTROL_BIN"
 
 say "Checking Karabiner-Elements..."
 
-if [ ! -d "/Applications/Karabiner-Elements.app" ]; then
+if [ ! -d "$KARABINER_APP" ]; then
     echo "Karabiner-Elements was not found."
     echo "Installing Karabiner-Elements..."
+    echo
 
     brew install --cask karabiner-elements
 fi
 
-[ -d "/Applications/Karabiner-Elements.app" ] \
-    || fail "Karabiner-Elements installation could not be completed."
+if [ ! -d "$KARABINER_APP" ]; then
+    fail "Karabiner-Elements installation could not be completed."
+fi
 
 echo "✓ Karabiner-Elements installed"
 
 say "Opening Karabiner-Elements..."
 
-open -a "Karabiner-Elements"
+if ! open "$KARABINER_APP"; then
+    fail "Karabiner-Elements could not be opened. Open it manually and run the installer again."
+fi
 
 echo
 echo "macOS may now ask for permissions."
 echo
-echo "Please enable the permissions requested by Karabiner,"
-echo "including Accessibility and Input Monitoring."
+echo "Please complete the Karabiner setup and enable"
+echo "all permissions requested by macOS."
+echo
+echo "These may include:"
+echo
+echo "  - Background Services"
+echo "  - Accessibility"
+echo "  - Input Monitoring"
+echo "  - Driver Extension"
 echo
 echo "Return to Terminal when Karabiner is ready."
 echo
@@ -116,8 +186,10 @@ for _ in {1..30}; do
 done
 
 if [ ! -f "$KARABINER_CONFIG" ]; then
-    fail "Karabiner did not create its configuration file. Open Karabiner once, then run the installer again."
+    fail "Karabiner did not create its configuration file. Open Karabiner once, complete its setup, then run the installer again."
 fi
+
+echo "✓ Karabiner configuration found"
 
 say "Downloading Motatel..."
 
@@ -130,8 +202,9 @@ curl -fL \
 
 tar -xzf "$ARCHIVE" -C "$TMP_ROOT"
 
-[ -d "$PAYLOAD" ] \
-    || fail "The Motatel payload could not be found."
+if [ ! -d "$PAYLOAD" ]; then
+    fail "The Motatel payload could not be found."
+fi
 
 for required in \
     media-seek-daemon.py \
@@ -140,22 +213,32 @@ for required in \
     com.yarw.media-seek-daemon.plist \
     karabiner-rules.json
 do
-    [ -f "$PAYLOAD/$required" ] \
-        || fail "Missing file: payload/$required"
+    if [ ! -f "$PAYLOAD/$required" ]; then
+        fail "Missing file: payload/$required"
+    fi
 done
+
+echo "✓ Motatel downloaded"
 
 say "Installing Motatel..."
 
 mkdir -p "$TARGET_HOME/.local/bin"
 mkdir -p "$TARGET_HOME/Library/LaunchAgents"
+mkdir -p "$TARGET_HOME/Library/Logs"
 mkdir -p "$TARGET_HOME/.config/karabiner"
 
-python3 - "$PAYLOAD" "$TARGET_HOME" <<'PY'
+"$PYTHON_BIN" - \
+    "$PAYLOAD" \
+    "$TARGET_HOME" \
+    "$PYTHON_BIN" \
+    "$MEDIA_CONTROL_BIN" <<'PY'
 from pathlib import Path
 import sys
 
 payload = Path(sys.argv[1])
 home = Path(sys.argv[2])
+python_bin = sys.argv[3]
+media_control_bin = sys.argv[4]
 
 destinations = {
     "media-seek-daemon.py":
@@ -174,7 +257,46 @@ destinations = {
 
 for filename, destination in destinations.items():
     text = (payload / filename).read_text()
-    text = text.replace("__MOTATEL_HOME__", str(home))
+
+    text = text.replace(
+        "__MOTATEL_HOME__",
+        str(home),
+    )
+
+    text = text.replace(
+        "__MOTATEL_PYTHON__",
+        python_bin,
+    )
+
+    text = text.replace(
+        "__MEDIA_CONTROL__",
+        media_control_bin,
+    )
+
+    # Compatibility with payload files from earlier Motatel builds.
+    text = text.replace(
+        "/opt/homebrew/bin/media-control",
+        media_control_bin,
+    )
+
+    if filename in {
+        "media-seek-daemon.py",
+        "media-seek-jump",
+    }:
+        if text.startswith("#!/usr/bin/python3"):
+            text = text.replace(
+                "#!/usr/bin/python3",
+                f"#!{python_bin}",
+                1,
+            )
+
+    if filename == "com.yarw.media-seek-daemon.plist":
+        text = text.replace(
+            "<string>/usr/bin/python3</string>",
+            f"<string>{python_bin}</string>",
+            1,
+        )
+
     destination.write_text(text)
 
     print(f"  ✓ {destination}")
@@ -185,9 +307,15 @@ chmod +x \
     "$TARGET_HOME/.local/bin/media-seek-command" \
     "$TARGET_HOME/.local/bin/media-seek-jump"
 
+if ! plutil -lint "$PLIST" >/dev/null; then
+    fail "The installed LaunchAgent configuration is invalid."
+fi
+
+echo "✓ LaunchAgent configuration valid"
+
 say "Installing the Karabiner rules..."
 
-python3 - \
+"$PYTHON_BIN" - \
     "$PAYLOAD/karabiner-rules.json" \
     "$KARABINER_CONFIG" \
     "$TARGET_HOME" <<'PY'
@@ -283,6 +411,11 @@ PY
 
 say "Starting Motatel..."
 
+mkdir -p /tmp/media-seek
+rm -f \
+    /tmp/media-seek/forward \
+    /tmp/media-seek/backward
+
 launchctl bootout \
     "$DOMAIN/$SERVICE" \
     2>/dev/null || true
@@ -309,7 +442,16 @@ then
     fail "Motatel was installed, but the background service did not start."
 fi
 
-rm -rf "$TMP_ROOT"
+if ! pgrep -f "media-seek-daemon.py" \
+    >/dev/null 2>&1
+then
+    fail "The Motatel service was loaded, but the background daemon is not running."
+fi
+
+echo "✓ Motatel background service is running"
+
+cleanup
+trap - EXIT
 
 echo
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
