@@ -1,10 +1,24 @@
-# Motatel by Max DetaL
+# Motatel by Max DetaL'
 
 **Hold media keys to seek. Tap to skip.**
 
 Motatel turns the **Previous**, **Next**, and **Play/Pause** media keys on macOS into proper playback controls.
 
 It was originally built for **MIDI DOBRYNYA controllers by Max DetaL**, but it also works with the built-in MacBook keyboard and compatible HID or BLE media devices supported by Karabiner-Elements.
+
+---
+
+## Supported systems
+
+Motatel v1.3 officially supports:
+
+- Apple Silicon Macs
+- M1 or newer
+- macOS 13 Ventura or later
+
+Intel Macs and macOS 12 Monterey or earlier are not officially supported by Motatel v1.3.
+
+Older macOS versions require legacy Karabiner-Elements releases and may behave differently during installation.
 
 ---
 
@@ -18,35 +32,41 @@ Open **Terminal**, paste this command, and press Enter:
 
 That is the entire installation command.
 
-The installer will automatically:
+The installer automatically:
 
-- check whether Homebrew is installed
-- install Homebrew if necessary
-- check whether Python 3 is installed
-- install Python 3 if necessary
-- check whether Karabiner-Elements is installed
-- install Karabiner-Elements if necessary
-- open Karabiner-Elements
-- download and install Motatel
-- add the required Karabiner rules
-- create a backup of the existing Karabiner configuration
-- install and start the background service
-- configure Motatel to start automatically after login
+- checks your Mac and macOS version
+- checks whether Homebrew is installed
+- installs Homebrew if necessary
+- checks whether Python 3 is installed
+- installs Python 3 if necessary
+- checks whether Karabiner-Elements is installed
+- installs Karabiner-Elements if necessary
+- opens Karabiner-Elements
+- downloads and installs Motatel
+- adds the required Karabiner rules
+- backs up the existing Karabiner configuration
+- installs and starts the background service
+- configures Motatel to start automatically after login
 
 ### One manual step
 
-macOS does not allow keyboard-control permissions to be granted silently from Terminal.
+macOS does not allow keyboard-control permissions to be granted automatically.
 
-When Karabiner-Elements opens, follow its setup prompts and approve the permissions requested by macOS. Depending on the macOS and Karabiner versions, this can include:
+When Karabiner-Elements opens:
+
+1. Follow the setup instructions shown by Karabiner.
+2. Approve the requested macOS permissions.
+3. Return to Terminal.
+4. Press **Enter** when the Motatel installer asks you to continue.
+
+Depending on your macOS and Karabiner versions, the requested permissions may include:
 
 - Background Services
 - Accessibility
 - Input Monitoring
 - Driver Extension
 
-Return to Terminal afterwards and press **Enter** when the installer asks you to continue.
-
-Then Motatel will finish the installation automatically.
+After that, Motatel finishes the installation automatically.
 
 ---
 
@@ -89,7 +109,7 @@ The longer you hold the button, the faster Motatel moves.
 - Play/Pause while seeking jumps ±60 seconds
 - Starts automatically after login
 - Runs silently in the background
-- Creates a Karabiner configuration backup before modifying it
+- Backs up the Karabiner configuration before modifying it
 - Designed for MIDI DOBRYNYA controllers
 - Also works with compatible media keyboards and remotes
 
@@ -115,19 +135,17 @@ Some USB receivers may appear inside Karabiner-EventViewer but still fail to tri
 
 ## Requirements
 
-Motatel uses:
-
 ### Karabiner-Elements
 
 Receives and remaps media-key events.
 
-Karabiner must remain installed while Motatel is being used.
+Karabiner must remain installed while Motatel is used.
 
 ### Python 3
 
 Runs the lightweight Motatel background daemon.
 
-Python 3 must remain installed while Motatel is being used.
+Python 3 must remain installed while Motatel is used.
 
 ### Homebrew
 
@@ -140,17 +158,18 @@ Homebrew does not need to run in the background.
 Motatel also uses standard macOS components, including:
 
 - `curl`
+- `tar`
 - `launchctl`
 - LaunchAgents
 - macOS media controls
 
-These are already part of macOS.
+These are already included with macOS.
 
 ---
 
 ## How it works
 
-Karabiner-Elements receives the media-key events and passes Motatel commands to a lightweight Python daemon.
+Karabiner-Elements receives media-key events and passes Motatel commands to a lightweight Python daemon.
 
 The daemon tracks:
 
@@ -169,13 +188,13 @@ The daemon is managed by a macOS LaunchAgent and starts automatically after logi
 
 ## Updating
 
-Run the same installation command again:
+Run the installation command again:
 
 ```bash
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/maxdetal/Motatel/main/install.sh)"
 ```
 
-The installer will download the current version, replace the Motatel files, back up the Karabiner configuration again, and restart the service.
+The installer downloads the current version, replaces the Motatel files, creates another Karabiner configuration backup, and restarts the service.
 
 ---
 
@@ -202,11 +221,21 @@ Motatel's Karabiner rules are currently left in the configuration to avoid accid
 
 ## Troubleshooting
 
+### Karabiner was installed but did not open
+
+Open it manually:
+
+```bash
+open "/Applications/Karabiner-Elements.app"
+```
+
+Complete the setup, return to Terminal, and run the Motatel installation command again.
+
 ### Karabiner opens, but the buttons do nothing
 
-Make sure the setup steps displayed by Karabiner-Elements have been completed.
+Make sure all setup steps displayed by Karabiner-Elements have been completed.
 
-Check that its required background services and macOS permissions are enabled.
+Check that the required background services and macOS permissions are enabled.
 
 Then restart Motatel:
 
@@ -228,29 +257,12 @@ A device may be visible in EventViewer but still be incompatible with Karabiner 
 
 ---
 
-## Repository structure
-
-```text
-Motatel/
-├── install.sh
-├── uninstall.sh
-├── README.md
-├── README.txt
-├── VERSION
-└── payload/
-    ├── media-seek-daemon.py
-    ├── media-seek-command
-    ├── media-seek-jump
-    ├── com.yarw.media-seek-daemon.plist
-    └── karabiner-rules.json
-```
-
----
-
 ## Known limitations
 
 - Karabiner permissions must be approved manually in macOS
-- Compatibility depends on the device's HID or BLE implementation
+- Intel Macs are not officially supported by Motatel v1.3
+- macOS 12 Monterey and earlier are not officially supported
+- Device compatibility depends on its HID or BLE implementation
 - The Play/Pause 60-second jump may not be available on every MIDI DOBRYNYA mapping
 - Different media players may expose playback information differently
 - Some USB media receivers do not trigger Karabiner complex modifications correctly
