@@ -1,46 +1,102 @@
-Мотатель by Max DetaL v1.3
-===========================
+Motatel by Max DetaL v1.3
+=========================
 
-Утилита непрерывной перемотки медиа для macOS.
+Continuous media seeking for macOS.
 
-Что умеет
----------
+Originally built for MIDI DOBRYNYA controllers by Max DetaL.
 
-Короткое нажатие назад или вперёд:
-предыдущий или следующий трек.
+------------------------------------------------------------
+WHAT IT DOES
+------------------------------------------------------------
 
-Удержание назад или вперёд:
-непрерывная перемотка.
+Previous / Next
 
-Play/Pause во время удержания:
-прыжок на 60 секунд в выбранную сторону.
+• Tap
+  Previous / Next track
 
-Профиль ускорения:
-первая скорость до 1 секунды;
-вторая скорость от 1 до 2,5 секунды;
-максимальная скорость после 2,5 секунды.
+• Hold
+  Continuous seeking
 
-Перед установкой
-----------------
+• Hold + Play/Pause
+  Jump ±60 seconds in the current seek direction
 
-1. Установить Karabiner-Elements.
-2. Запустить Karabiner-Elements хотя бы один раз.
-3. Выдать запрошенные разрешения macOS.
-4. Убедиться, что команда python3 работает.
+Seek speed increases automatically while holding the button.
 
-Установка
----------
+------------------------------------------------------------
+REQUIREMENTS
+------------------------------------------------------------
 
-Открыть Terminal, перейти в папку пакета и выполнить:
+Before installing Motatel, make sure you have:
+
+✓ Homebrew
+
+✓ Python 3
+
+✓ Karabiner-Elements
+
+Launch Karabiner-Elements at least once and approve all
+requested macOS permissions.
+
+------------------------------------------------------------
+INSTALLATION
+------------------------------------------------------------
+
+If Homebrew is not installed:
+
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+
+Install Python:
+
+brew install python
+
+Install Karabiner-Elements:
+
+brew install --cask karabiner-elements
+
+Launch Karabiner once:
+
+open -a "Karabiner-Elements"
+
+Approve the requested macOS permissions.
+
+Then install Motatel:
 
 bash install.sh
 
-Автор
------
+------------------------------------------------------------
+WHAT THE INSTALLER DOES
+------------------------------------------------------------
+
+• installs Motatel
+
+• installs the background daemon
+
+• installs helper scripts
+
+• installs the LaunchAgent
+
+• patches your Karabiner configuration
+
+• creates a backup before modifying anything
+
+• starts automatically after login
+
+------------------------------------------------------------
+UNINSTALL
+------------------------------------------------------------
+
+bash uninstall.sh
+
+------------------------------------------------------------
+AUTHOR
+------------------------------------------------------------
 
 Max DetaL
 
-Версия
-------
+https://github.com/maxdetal
+
+------------------------------------------------------------
+VERSION
+------------------------------------------------------------
 
 1.3
