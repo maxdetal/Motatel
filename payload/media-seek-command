@@ -1,0 +1,50 @@
+#!/bin/zsh
+
+STATE_DIR="/tmp/media-seek"
+mkdir -p "$STATE_DIR"
+
+JUMP="$HOME/.local/bin/media-seek-jump"
+
+case "$1:$2" in
+  start:forward)
+    rm -f "$STATE_DIR/backward"
+    touch "$STATE_DIR/forward"
+    ;;
+
+  stop:forward)
+    rm -f "$STATE_DIR/forward"
+    ;;
+
+  start:backward)
+    rm -f "$STATE_DIR/forward"
+    touch "$STATE_DIR/backward"
+    ;;
+
+  stop:backward)
+    rm -f "$STATE_DIR/backward"
+    ;;
+
+  stop:all)
+    rm -f "$STATE_DIR/forward" "$STATE_DIR/backward"
+    ;;
+
+  play:)
+    if [[ -f "$STATE_DIR/forward" ]]; then
+      "$JUMP" forward
+    elif [[ -f "$STATE_DIR/backward" ]]; then
+      "$JUMP" backward
+    else
+      media-control toggle-play-pause
+    fi
+    ;;
+
+  *)
+    echo "Usage:"
+    echo "  media-seek-command start forward"
+    echo "  media-seek-command stop forward"
+    echo "  media-seek-command start backward"
+    echo "  media-seek-command stop backward"
+    echo "  media-seek-command play"
+    exit 1
+    ;;
+esac

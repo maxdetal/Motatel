@@ -1,0 +1,43 @@
+#!/usr/bin/python3
+
+import json
+import subprocess
+import sys
+
+MEDIA_CONTROL = "/opt/homebrew/bin/media-control"
+JUMP_SECONDS = 60.0
+
+if len(sys.argv) != 2 or sys.argv[1] not in {"forward", "backward"}:
+    raise SystemExit("Usage: media-seek-jump forward|backward")
+
+direction = 1 if sys.argv[1] == "forward" else -1
+
+try:
+    output = subprocess.check_output(
+        [MEDIA_CONTROL, "get", "--now", "--no-artwork"],
+        text=True,
+        stderr=subprocess.DEVNULL
+    )
+
+    info = json.loads(output)
+    position = float(info.get("elapsedTimeNow", info["elapsedTime"]))
+    duration = info.get("duration")
+
+    position += direction * JUMP_SECONDS
+    position = max(0.0, position)
+
+    if duration is not None:
+        position = min(
+            position,
+            max(0.0, float(duration) - 0.2)
+        )
+
+    subprocess.run(
+        [MEDIA_CONTROL, "seek", str(position)],
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+        check=False
+    )
+
+except Exception:
+    pass

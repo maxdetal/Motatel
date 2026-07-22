@@ -1,0 +1,275 @@
+[
+  {
+    "description": "Media seek and 60-second Play jump",
+    "manipulators": [
+      {
+        "type": "basic",
+        "from": {
+          "key_code": "f8",
+          "modifiers": {
+            "optional": [
+              "any"
+            ]
+          }
+        },
+        "conditions": [
+          {
+            "type": "variable_if",
+            "name": "media_seek_direction",
+            "value": 1
+          }
+        ],
+        "to": [
+          {
+            "shell_command": "__MOTATEL_HOME__/.local/bin/media-seek-command play"
+          }
+        ]
+      },
+      {
+        "type": "basic",
+        "from": {
+          "consumer_key_code": "play_or_pause",
+          "modifiers": {
+            "optional": [
+              "any"
+            ]
+          }
+        },
+        "conditions": [
+          {
+            "type": "variable_if",
+            "name": "media_seek_direction",
+            "value": 1
+          }
+        ],
+        "to": [
+          {
+            "shell_command": "__MOTATEL_HOME__/.local/bin/media-seek-command play"
+          }
+        ]
+      },
+      {
+        "type": "basic",
+        "from": {
+          "key_code": "f8",
+          "modifiers": {
+            "optional": [
+              "any"
+            ]
+          }
+        },
+        "conditions": [
+          {
+            "type": "variable_if",
+            "name": "media_seek_direction",
+            "value": -1
+          }
+        ],
+        "to": [
+          {
+            "shell_command": "__MOTATEL_HOME__/.local/bin/media-seek-command play"
+          }
+        ]
+      },
+      {
+        "type": "basic",
+        "from": {
+          "consumer_key_code": "play_or_pause",
+          "modifiers": {
+            "optional": [
+              "any"
+            ]
+          }
+        },
+        "conditions": [
+          {
+            "type": "variable_if",
+            "name": "media_seek_direction",
+            "value": -1
+          }
+        ],
+        "to": [
+          {
+            "shell_command": "__MOTATEL_HOME__/.local/bin/media-seek-command play"
+          }
+        ]
+      },
+      {
+        "type": "basic",
+        "from": {
+          "key_code": "f7",
+          "modifiers": {
+            "optional": [
+              "any"
+            ]
+          }
+        },
+        "to": [
+          {
+            "set_variable": {
+              "name": "media_seek_direction",
+              "value": -1
+            }
+          }
+        ],
+        "to_if_alone": [
+          {
+            "consumer_key_code": "scan_previous_track"
+          }
+        ],
+        "to_if_held_down": [
+          {
+            "shell_command": "__MOTATEL_HOME__/.local/bin/media-seek-command start backward"
+          }
+        ],
+        "to_after_key_up": [
+          {
+            "shell_command": "__MOTATEL_HOME__/.local/bin/media-seek-command stop backward"
+          },
+          {
+            "set_variable": {
+              "name": "media_seek_direction",
+              "value": 0
+            }
+          }
+        ],
+        "parameters": {
+          "basic.to_if_alone_timeout_milliseconds": 600,
+          "basic.to_if_held_down_threshold_milliseconds": 100
+        }
+      },
+      {
+        "type": "basic",
+        "from": {
+          "key_code": "f9",
+          "modifiers": {
+            "optional": [
+              "any"
+            ]
+          }
+        },
+        "to": [
+          {
+            "set_variable": {
+              "name": "media_seek_direction",
+              "value": 1
+            }
+          }
+        ],
+        "to_if_alone": [
+          {
+            "consumer_key_code": "scan_next_track"
+          }
+        ],
+        "to_if_held_down": [
+          {
+            "shell_command": "__MOTATEL_HOME__/.local/bin/media-seek-command start forward"
+          }
+        ],
+        "to_after_key_up": [
+          {
+            "shell_command": "__MOTATEL_HOME__/.local/bin/media-seek-command stop forward"
+          },
+          {
+            "set_variable": {
+              "name": "media_seek_direction",
+              "value": 0
+            }
+          }
+        ],
+        "parameters": {
+          "basic.to_if_alone_timeout_milliseconds": 600,
+          "basic.to_if_held_down_threshold_milliseconds": 100
+        }
+      },
+      {
+        "type": "basic",
+        "from": {
+          "consumer_key_code": "scan_previous_track",
+          "modifiers": {
+            "optional": [
+              "any"
+            ]
+          }
+        },
+        "to": [
+          {
+            "set_variable": {
+              "name": "media_seek_direction",
+              "value": -1
+            }
+          }
+        ],
+        "to_if_alone": [
+          {
+            "consumer_key_code": "scan_previous_track"
+          }
+        ],
+        "to_if_held_down": [
+          {
+            "shell_command": "__MOTATEL_HOME__/.local/bin/media-seek-command start backward"
+          }
+        ],
+        "to_after_key_up": [
+          {
+            "shell_command": "__MOTATEL_HOME__/.local/bin/media-seek-command stop backward"
+          },
+          {
+            "set_variable": {
+              "name": "media_seek_direction",
+              "value": 0
+            }
+          }
+        ],
+        "parameters": {
+          "basic.to_if_alone_timeout_milliseconds": 600,
+          "basic.to_if_held_down_threshold_milliseconds": 100
+        }
+      },
+      {
+        "type": "basic",
+        "from": {
+          "consumer_key_code": "scan_next_track",
+          "modifiers": {
+            "optional": [
+              "any"
+            ]
+          }
+        },
+        "to": [
+          {
+            "set_variable": {
+              "name": "media_seek_direction",
+              "value": 1
+            }
+          }
+        ],
+        "to_if_alone": [
+          {
+            "consumer_key_code": "scan_next_track"
+          }
+        ],
+        "to_if_held_down": [
+          {
+            "shell_command": "__MOTATEL_HOME__/.local/bin/media-seek-command start forward"
+          }
+        ],
+        "to_after_key_up": [
+          {
+            "shell_command": "__MOTATEL_HOME__/.local/bin/media-seek-command stop forward"
+          },
+          {
+            "set_variable": {
+              "name": "media_seek_direction",
+              "value": 0
+            }
+          }
+        ],
+        "parameters": {
+          "basic.to_if_alone_timeout_milliseconds": 600,
+          "basic.to_if_held_down_threshold_milliseconds": 100
+        }
+      }
+    ]
+  }
+]
