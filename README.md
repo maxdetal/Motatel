@@ -1,4 +1,4 @@
-# Motatel by Max DetaL'
+# Motatel by Max DetaL
 
 **Hold media keys to seek. Tap to skip.**
 
@@ -39,6 +39,8 @@ The installer automatically:
 - installs Homebrew if necessary
 - checks whether Python 3 is installed
 - installs Python 3 if necessary
+- checks whether media-control is installed
+- installs media-control if necessary
 - checks whether Karabiner-Elements is installed
 - installs Karabiner-Elements if necessary
 - opens Karabiner-Elements
@@ -55,7 +57,7 @@ macOS does not allow keyboard-control permissions to be granted automatically.
 When Karabiner-Elements opens:
 
 1. Follow the setup instructions shown by Karabiner.
-2. Approve the requested macOS permissions.
+2. Approve every requested macOS permission.
 3. Return to Terminal.
 4. Press **Enter** when the Motatel installer asks you to continue.
 
@@ -147,6 +149,12 @@ Runs the lightweight Motatel background daemon.
 
 Python 3 must remain installed while Motatel is used.
 
+### media-control
+
+Provides access to macOS media playback information and seeking.
+
+Motatel uses media-control to read the current playback position and perform precise seeking.
+
 ### Homebrew
 
 Used by the installer to install missing dependencies.
@@ -161,7 +169,6 @@ Motatel also uses standard macOS components, including:
 - `tar`
 - `launchctl`
 - LaunchAgents
-- macOS media controls
 
 These are already included with macOS.
 
@@ -171,7 +178,9 @@ These are already included with macOS.
 
 Karabiner-Elements receives media-key events and passes Motatel commands to a lightweight Python daemon.
 
-The daemon tracks:
+The daemon communicates with macOS media sessions through **media-control**.
+
+It tracks:
 
 - the active seek direction
 - how long the button has been held
@@ -213,7 +222,7 @@ The uninstaller removes:
 - the LaunchAgent
 - the running background service
 
-Karabiner-Elements, Homebrew, and Python are not removed because other software may use them.
+Karabiner-Elements, Homebrew, Python, and media-control are intentionally left installed because other software may use them.
 
 Motatel's Karabiner rules are currently left in the configuration to avoid accidentally damaging an existing setup.
 
@@ -231,11 +240,29 @@ open "/Applications/Karabiner-Elements.app"
 
 Complete the setup, return to Terminal, and run the Motatel installation command again.
 
-### Karabiner opens, but the buttons do nothing
+### Buttons do nothing
 
-Make sure all setup steps displayed by Karabiner-Elements have been completed.
+Make sure all Karabiner setup steps have been completed and every requested macOS permission has been granted.
 
-Check that the required background services and macOS permissions are enabled.
+Restart the background service:
+
+```bash
+launchctl kickstart -k gui/$(id -u)/com.yarw.media-seek-daemon
+```
+
+### Seeking does not work
+
+Verify that media-control is installed:
+
+```bash
+media-control --version
+```
+
+If the command is missing:
+
+```bash
+brew install media-control
+```
 
 Then restart Motatel:
 
@@ -251,9 +278,9 @@ launchctl print gui/$(id -u)/com.yarw.media-seek-daemon
 
 ### Built-in keyboard works, but another device does not
 
-Open Karabiner-EventViewer and check whether the device sends standard media-key events.
+Open Karabiner-EventViewer and verify that the device sends standard media-key events.
 
-A device may be visible in EventViewer but still be incompatible with Karabiner complex modifications.
+A device may appear in EventViewer while still being incompatible with Karabiner complex modifications.
 
 ---
 
@@ -264,7 +291,7 @@ A device may be visible in EventViewer but still be incompatible with Karabiner 
 - macOS 12 Monterey and earlier are not officially supported
 - Device compatibility depends on its HID or BLE implementation
 - The Play/Pause 60-second jump may not be available on every MIDI DOBRYNYA mapping
-- Different media players may expose playback information differently
+- Different media players expose playback information differently
 - Some USB media receivers do not trigger Karabiner complex modifications correctly
 
 ---
