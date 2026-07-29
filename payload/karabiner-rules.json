@@ -1,7 +1,45 @@
 [
   {
-    "description": "Media seek and 60-second Play jump",
+    "description": "Media seek, Shift 30-second jump and 90-second Play jump",
     "manipulators": [
+      {
+        "type": "basic",
+        "from": {
+          "key_code": "f7",
+          "modifiers": {
+            "mandatory": [
+              "shift"
+            ],
+            "optional": [
+              "caps_lock"
+            ]
+          }
+        },
+        "to": [
+          {
+            "shell_command": "__MOTATEL_HOME__/.local/bin/media-seek-jump backward30"
+          }
+        ]
+      },
+      {
+        "type": "basic",
+        "from": {
+          "key_code": "f9",
+          "modifiers": {
+            "mandatory": [
+              "shift"
+            ],
+            "optional": [
+              "caps_lock"
+            ]
+          }
+        },
+        "to": [
+          {
+            "shell_command": "__MOTATEL_HOME__/.local/bin/media-seek-jump forward30"
+          }
+        ]
+      },
       {
         "type": "basic",
         "from": {
