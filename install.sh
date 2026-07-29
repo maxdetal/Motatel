@@ -1,7 +1,7 @@
 #!/bin/bash
 set -euo pipefail
 
-APP_TITLE="Motatel by Max DetaL v1.3"
+APP_TITLE="Motatel by Max DetaL v1.4"
 REPO="maxdetal/Motatel"
 BRANCH="main"
 
@@ -58,11 +58,11 @@ MACOS_VERSION="$(sw_vers -productVersion)"
 MACOS_MAJOR="${MACOS_VERSION%%.*}"
 
 if [ "$ARCH" != "arm64" ]; then
-    fail "Motatel v1.3 currently supports Apple Silicon Macs only (M1 or newer)."
+    fail "Motatel v1.4 currently supports Apple Silicon Macs only (M1 or newer)."
 fi
 
 if [ "$MACOS_MAJOR" -lt 13 ]; then
-    fail "Motatel v1.3 requires macOS 13 Ventura or later."
+    fail "Motatel v1.4 requires macOS 13 Ventura or later."
 fi
 
 echo "✓ Architecture: $ARCH"
@@ -467,7 +467,7 @@ echo "Hold Previous / Next:"
 echo "  continuous seeking"
 echo
 echo "Press Play/Pause while seeking:"
-echo "  jump 60 seconds"
+echo "  jump 90 seconds"
 echo
 echo "Enjoy."
 echo
