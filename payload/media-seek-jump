@@ -5,12 +5,21 @@ import subprocess
 import sys
 
 MEDIA_CONTROL = "/opt/homebrew/bin/media-control"
-JUMP_SECONDS = 60.0
 
-if len(sys.argv) != 2 or sys.argv[1] not in {"forward", "backward"}:
-    raise SystemExit("Usage: media-seek-jump forward|backward")
+JUMPS = {
+    "forward": 90.0,
+    "backward": -90.0,
+    "forward30": 30.0,
+    "backward30": -30.0,
+}
 
-direction = 1 if sys.argv[1] == "forward" else -1
+if len(sys.argv) != 2 or sys.argv[1] not in JUMPS:
+    raise SystemExit(
+        "Usage: media-seek-jump "
+        "forward|backward|forward30|backward30"
+    )
+
+jump_seconds = JUMPS[sys.argv[1]]
 
 try:
     output = subprocess.check_output(
@@ -20,10 +29,12 @@ try:
     )
 
     info = json.loads(output)
-    position = float(info.get("elapsedTimeNow", info["elapsedTime"]))
+    position = float(
+        info.get("elapsedTimeNow", info["elapsedTime"])
+    )
     duration = info.get("duration")
 
-    position += direction * JUMP_SECONDS
+    position += jump_seconds
     position = max(0.0, position)
 
     if duration is not None:
